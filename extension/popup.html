@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>GovNav</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Roboto, sans-serif;
+        min-width: 250px;
+        padding: 16px;
+        background: linear-gradient(135deg, #f5f9ff, #e3f2fd);
+        color: #222;
+      }
+      h3 {
+        margin-top: 0;
+        color: #1976d2;
+        text-align: center;
+      }
+      select, button, input {
+        width: 100%;
+        border: none;
+        border-radius: 8px;
+        padding: 10px;
+        margin-top: 10px;
+        font-size: 10px;
+      }
+      select {
+        background-color: #ffffff;
+        box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+      }
+      button {
+        background-color: #1976d2;
+        color: #fff;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      button:hover {
+        background-color: #0d47a1;
+      }
+      .small {
+        font-size: 12px;
+        color: #555;
+        margin-top: 8px;
+        text-align: center;
+      }
+      .composer {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        align-items: center;
+      }
+      .composer input {
+        flex: 1;
+      }
+      .composer button {
+        width: auto;
+        padding: 10px 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>🌐 GovNav</h3>
+    <label for="lang">Language</label>
+    <select id="lang">
+      <option value="en">English</option>
+      <option value="hi">हिंदी (Hindi)</option>
+      <option value="ta">தமிழ் (Tamil)</option>
+    </select>
+    <button id="openWidget">Show widget on current page</button>
+    <div class="small">
+      When you open a government site (e.g., *.gov.in), GovNav injects a help widget to guide you.
+    </div>
+    <div id="chat" class="chat"></div>
+
+    <div class="composer">
+      <button id="micBtn" class="mic" title="Speak">🎤</button>
+      <input id="userInput" type="text" placeholder="Ask GovBot a question..." />
+      <button id="sendBtn" class="btn primary">Send</button>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

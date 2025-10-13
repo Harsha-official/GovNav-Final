@@ -1,0 +1,2 @@
+/* Minimal CSS; content script also inlines styles but keeping this file for extension package */
+#govnav-mini-helper { font-family: Arial, sans-serif; }
