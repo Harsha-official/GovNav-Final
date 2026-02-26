@@ -1,6 +1,7 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
+const { systemPrompt } = require('./system-prompt');
 
 const app = express();
 app.use(cors());
@@ -11,17 +12,14 @@ const GOOGLE_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/
 
 app.post('/api/chat', async (req, res) => {
   const { message } = req.body;
-  if (!GOOGLE_API_KEY) return res.status(500).json({ error: 'API key missing' });
 
-  // Construct a more detailed prompt for the AI
-  const systemPrompt = `You are GovBot, an expert assistant for navigating Indian government services. Your goal is to provide clear, step-by-step guidance.
-  When a user asks a question:
-  1.  Break down the process into a simple, numbered list of steps.
-  2.  For each step that involves clicking a button or link, use the format: 'highlight and click on the button "button text"' where "button text" is the exact text on the button/link.
-  3.  If the query is about a process, suggest a relevant YouTube search query for a visual guide.
-  4.  Keep the language simple and clear.
+  if (!message || typeof message !== 'string' || message.trim().length === 0) {
+    return res.status(400).json({ error: 'Invalid message provided.' });
+  }
 
-  User's question: "${message}"`;
+  if (!GOOGLE_API_KEY) {
+    return res.status(500).json({ error: 'API key not configured.' });
+  }
 
   try {
     const googleRes = await fetch(`${GOOGLE_API_URL}?key=${GOOGLE_API_KEY}`, {
@@ -32,21 +30,25 @@ app.post('/api/chat', async (req, res) => {
       body: JSON.stringify({
         contents: [{
           parts: [{
-            text: systemPrompt
+            text: systemPrompt.replace('{message}', message)
           }]
         }]
       })
     });
+
     const data = await googleRes.json();
+
     if (!googleRes.ok) {
       console.error('Google API error:', data);
-      return res.status(500).json({ error: data });
+      return res.status(googleRes.status).json({ error: 'Failed to fetch response from Google API.', details: data });
     }
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text.replace(/\n/g, '<br/>').replace(/\*/g, '') || 'No response.';
+
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from the model.';
     res.json({ reply });
+
   } catch (e) {
     console.error('Proxy error:', e);
-    res.status(500).json({ error: 'Google API request failed' });
+    res.status(500).json({ error: 'An unexpected error occurred.' });
   }
 });
 

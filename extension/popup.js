@@ -3,6 +3,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const langSelect = document.getElementById('lang');
   const micBtn = document.getElementById('micBtn');
   const userInput = document.getElementById('userInput');
+  const chatDiv = document.getElementById('chat');
+
+  // Quick Action Buttons
+  const downloadAadhaarBtn = document.getElementById('downloadAadhaar');
+  const downloadLLRBtn = document.getElementById('downloadLLR');
+  const downloadLicenseBtn = document.getElementById('downloadLicense');
 
   // Speech Recognition
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -15,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     micBtn.onclick = () => {
       micBtn.textContent = '...';
-      recognition.lang = langSelect.value === 'hi' ? 'hi-IN' : 'en-US'; // Adjust for Hindi
+      recognition.lang = langSelect.value === 'hi' ? 'hi-IN' : 'en-US';
       recognition.start();
     };
 
@@ -23,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const speechResult = event.results[0][0].transcript;
       userInput.value = speechResult;
       micBtn.textContent = '🎤';
-      // Automatically send the message
       document.getElementById('sendBtn').click();
     };
 
@@ -36,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
       micBtn.textContent = '🎤';
     };
   } else {
-    micBtn.style.display = 'none'; // Hide if not supported
+    micBtn.style.display = 'none';
     console.warn('Speech Recognition not supported in this browser.');
   }
 
@@ -57,32 +62,72 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  document.getElementById('sendBtn').onclick = async () => {
-    const input = userInput.value.trim();
-    if (!input) return;
-    const chatDiv = document.getElementById('chat');
-    chatDiv.innerHTML += `<div><b>You:</b> ${input}</div>`;
-    userInput.value = '';
-    chatDiv.innerHTML += `<div><i>GovBot is typing...</i></div>`;
+  const createMessage = (sender, message, isHtml = false) => {
+    const messageDiv = document.createElement('div');
+    const senderStrong = document.createElement('strong');
+    senderStrong.textContent = `${sender}: `;
+    messageDiv.appendChild(senderStrong);
+
+    if (isHtml) {
+      const sanitizedHtml = DOMPurify.sanitize(marked.parse(message));
+      const messageSpan = document.createElement('span');
+      messageSpan.innerHTML = sanitizedHtml;
+      messageDiv.appendChild(messageSpan);
+    } else {
+      const messageText = document.createTextNode(message);
+      messageDiv.appendChild(messageText);
+    }
+
+    chatDiv.appendChild(messageDiv);
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+  };
+
+  const sendMessage = async (message) => {
+    createMessage('You', message);
+    const typingDiv = document.createElement('div');
+    typingDiv.innerHTML = '<i>GovBot is typing...</i>';
+    chatDiv.appendChild(typingDiv);
+
     try {
       const res = await fetch('http://localhost:3001/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: input })
+        body: JSON.stringify({ message })
       });
+
+      chatDiv.removeChild(typingDiv);
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        createMessage('Error', `Could not connect to AI: ${errorData.error || res.statusText}`);
+        return;
+      }
+
       const data = await res.json();
-      const lastTypingMessage = chatDiv.querySelector('div:last-child');
-      if (lastTypingMessage && lastTypingMessage.textContent === 'GovBot is typing...') {
-        lastTypingMessage.remove();
-      }
-      chatDiv.innerHTML += `<div><b>GovBot:</b> ${data.reply || 'No response.'}</div>`;
+      createMessage('GovBot', data.reply || 'No response.', true);
     } catch (e) {
-      const lastTypingMessage = chatDiv.querySelector('div:last-child');
-      if (lastTypingMessage && lastTypingMessage.textContent === 'GovBot is typing...') {
-        lastTypingMessage.remove();
-      }
-      chatDiv.innerHTML += `<div style="color:red"><b>Error:</b> Could not connect to AI.</div>`;
+      chatDiv.removeChild(typingDiv);
+      createMessage('Error', 'An unexpected error occurred.');
+      console.error('Fetch error:', e);
     }
-    chatDiv.scrollTop = chatDiv.scrollHeight;
+  }
+
+  document.getElementById('sendBtn').onclick = async () => {
+    const input = userInput.value.trim();
+    if (!input) return;
+    userInput.value = '';
+    sendMessage(input)
   };
+
+  downloadAadhaarBtn.addEventListener('click', () => {
+    sendMessage('How to download Aadhaar card?');
+  });
+
+  downloadLLRBtn.addEventListener('click', () => {
+    window.open('https://sarathi.parivahan.gov.in/sarathiservice/printlearerslicence.do', '_blank');
+  });
+
+  downloadLicenseBtn.addEventListener('click', () => {
+    sendMessage('how to download driving license');
+  });
 });

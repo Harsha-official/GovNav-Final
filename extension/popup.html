@@ -56,6 +56,24 @@
         width: auto;
         padding: 10px 16px;
       }
+      .quick-actions {
+        margin-top: 16px;
+        border-top: 1px solid #ccc;
+        padding-top: 10px;
+      }
+      .quick-actions h4 {
+        margin-top: 0;
+        color: #1976d2;
+        text-align: center;
+      }
+      .quick-actions button {
+          background-color: #e3f2fd;
+          color: #1976d2;
+          border: 1px solid #1976d2;
+      }
+      .quick-actions button:hover {
+          background-color: #cde5fa;
+      }
     </style>
   </head>
   <body>
@@ -67,6 +85,14 @@
       <option value="ta">தமிழ் (Tamil)</option>
     </select>
     <button id="openWidget">Show widget on current page</button>
+
+    <div class="quick-actions">
+      <h4>Quick Actions</h4>
+      <button id="downloadAadhaar">How to download Aadhaar</button>
+      <button id="downloadLLR">Download Learner's License</button>
+      <button id="downloadLicense">Download Driving License</button>
+    </div>
+
     <div class="small">
       When you open a government site (e.g., *.gov.in), GovNav injects a help widget to guide you.
     </div>
@@ -78,6 +104,8 @@
       <button id="sendBtn" class="btn primary">Send</button>
     </div>
 
+    <script src="purify.min.js"></script>
+    <script src="marked.min.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>
