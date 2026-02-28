@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const downloadAadhaarBtn = document.getElementById('downloadAadhaar');
   const downloadLLRBtn = document.getElementById('downloadLLR');
   const downloadLicenseBtn = document.getElementById('downloadLicense');
+  const scanLinksBtn = document.getElementById('scanLinks');
 
   // Speech Recognition
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -129,5 +130,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   downloadLicenseBtn.addEventListener('click', () => {
     sendMessage('how to download driving license');
+  });
+
+  scanLinksBtn.addEventListener('click', async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['scanLinks.js']
+    });
+  });
+
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'scanLinks') {
+      let linksList = '';
+      if (request.links.length > 0) {
+        linksList = request.links.map(link => `<li><a href="${link}" target="_blank">${link}</a></li>`).join('');
+      } else {
+        linksList = 'No government links found on this page.';
+      }
+      createMessage('GovBot', `<ul>${linksList}</ul>`, true);
+    }
   });
 });

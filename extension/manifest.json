@@ -50,7 +50,8 @@
       "resources": [
         "popup.js",
         "styles.css",
-        "content_script.js"
+        "content_script.js",
+        "scanLinks.js"
       ],
       "matches": [
         "<all_urls>"
