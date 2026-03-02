@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (request.action === 'scanLinks') {
       let linksList = '';
       if (request.links.length > 0) {
-        linksList = request.links.map(link => `<li><a href="${link}" target="_blank">${link}</a></li>`).join('');
+        linksList = request.links.map(link => `<li><a href="${link.href}" target="_blank">${link.text}</a></li>`).join('');
       } else {
         linksList = 'No government links found on this page.';
       }
